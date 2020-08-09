@@ -8,6 +8,9 @@ edition = "2018"
 
 [dependencies]
 dotenv = "0.15.0"
+env_logger = "0.7.1"
+log = "0.4.11"
+regex = "1"
 hyper = "0.13.7"
 hyper-proxy = "0.7.0"
 hyper-rustls = "0.21.0"

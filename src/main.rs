@@ -1,6 +1,10 @@
 use std::env;
 use telegram_bot::*;
 use tokio::stream::StreamExt;
+use regex::Regex;
+
+#[macro_use]
+extern crate log;
 
 trait NewWithProxy {
     fn with_proxy<T: AsRef<str>>(token: T, url: T) -> Api;
@@ -33,10 +37,9 @@ impl NewWithProxy for Api {
 
 #[tokio::main]
 async fn main() -> Result<(), telegram_bot::Error> {
-    {
-        use dotenv;
-        dotenv::dotenv().ok();
-    }
+    use dotenv;
+    env_logger::init();
+    dotenv::dotenv().ok();
     let token = env::var("TELEGRAM_BOT_TOKEN").expect("TELEGRAM_BOT_TOKEN not found");
 
     let api = match env::var("https_proxy") {
@@ -53,7 +56,23 @@ async fn main() -> Result<(), telegram_bot::Error> {
         let update = update?;
         match update.kind {
             UpdateKind::Message(message) => {
-                println!("{}", message.text().expect("not a text"))
+                if let Option::Some(text) = message.text() {
+                    debug!("text: {}", text);
+
+                    if Regex::new(r"^/start").unwrap().is_match(text.as_str()) {
+                        api.send(message.text_reply(format!(
+                            "面包是真的垃圾"
+                        ))).await.map_err(|err| {
+                            error!("Unexpected error: {}",err);
+                        }).ok();
+                    } else if Regex::new(r"^/help").unwrap().is_match(text.as_str()) {
+                        api.send(message.text_reply(format!(
+                            "/start 开始\n/help 帮助"
+                        ))).await.map_err(|err| {
+                            error!("Unexpected error: {}",err);
+                        }).ok();
+                    }
+                }
             }
             _ => {
                 // todo
