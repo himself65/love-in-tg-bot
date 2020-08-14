@@ -7,11 +7,11 @@ use regex::Regex;
 extern crate log;
 
 trait NewWithProxy {
-    fn with_proxy<T: AsRef<str>>(token: T, url: T) -> Api;
+    fn new_with_proxy<T: AsRef<str>>(token: T, url: T) -> Api;
 }
 
 impl NewWithProxy for Api {
-    fn with_proxy<T: AsRef<str>>(token: T, url: T) -> Api {
+    fn new_with_proxy<T: AsRef<str>>(token: T, url: T) -> Api {
         use hyper_proxy::{Proxy, Intercept, ProxyConnector};
         use hyper_rustls::HttpsConnector;
         use telegram_bot::connector::hyper::HyperConnector;
@@ -44,7 +44,7 @@ async fn main() -> Result<(), telegram_bot::Error> {
 
     let api = match env::var("https_proxy") {
         Ok(url) => {
-            Api::with_proxy(token, url)
+            Api::new_with_proxy(token, url)
         }
         Err(_) => {
             Api::new(token)
